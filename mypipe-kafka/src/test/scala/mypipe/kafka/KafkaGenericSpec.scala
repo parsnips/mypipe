@@ -11,7 +11,7 @@ import mypipe.mysql.MySQLBinaryLogConsumer
 import org.scalatest.BeforeAndAfterAll
 import org.slf4j.LoggerFactory
 import org.apache.avro.util.Utf8
-import mypipe.avro.GenericInMemorySchemaRepo
+import mypipe.avro.{ TopicUtil, GenericInMemorySchemaRepo }
 import mypipe.avro.schema.{ AvroSchemaUtils, GenericSchemaRepository }
 import org.apache.avro.Schema
 
@@ -43,52 +43,54 @@ class KafkaGenericSpec extends UnitSpec with DatabaseSpec with ActorSystemSpec w
     val zkConnect = conf.getString("mypipe.test.kafka-generic-producer.zk-connect")
 
     val kafkaConsumer = new KafkaGenericMutationAvroConsumer[Short](
-      topic = KafkaUtil.genericTopic(Queries.DATABASE.name, Queries.TABLE.name),
+      topic = TopicUtil.genericTopic(Queries.DATABASE.name, Queries.TABLE.name),
       zkConnect = zkConnect,
       groupId = s"${Queries.DATABASE.name}_${Queries.TABLE.name}-${System.currentTimeMillis()}",
-      schemaIdSizeInBytes = 2)(
+      schemaIdSizeInBytes = 2
+    )(
 
       insertCallback = { insertMutation ⇒
-        log.debug("consumed insert mutation: " + insertMutation)
-        try {
-          assert(insertMutation.getDatabase.toString == Queries.DATABASE.name)
-          assert(insertMutation.getTable.toString == Queries.TABLE.name)
-          assert(insertMutation.getStrings.get(username).toString.equals(Queries.INSERT.username))
-        } catch {
-          case e: Exception ⇒ log.error("Failed testing insert: {} -> {}", e.getMessage, e.getStackTrace.mkString(System.lineSeparator()))
-        }
+      log.debug("consumed insert mutation: " + insertMutation)
+      try {
+        assert(insertMutation.getDatabase.toString == Queries.DATABASE.name)
+        assert(insertMutation.getTable.toString == Queries.TABLE.name)
+        assert(insertMutation.getStrings.get(username).toString.equals(Queries.INSERT.username))
+      } catch {
+        case e: Exception ⇒ log.error("Failed testing insert: {} -> {}", e.getMessage, e.getStackTrace.mkString(System.lineSeparator()))
+      }
 
-        true
-      },
+      true
+    },
 
       updateCallback = { updateMutation ⇒
-        log.debug("consumed update mutation: " + updateMutation)
-        try {
-          assert(updateMutation.getDatabase.toString == Queries.DATABASE.name)
-          assert(updateMutation.getTable.toString == Queries.TABLE.name)
-          assert(updateMutation.getOldStrings.get(username).toString == Queries.INSERT.username)
-          assert(updateMutation.getNewStrings.get(username).toString == Queries.UPDATE.username)
-        } catch {
-          case e: Exception ⇒ log.error("Failed testing update: {} -> {}", e.getMessage, e.getStackTrace.mkString(System.lineSeparator()))
-        }
+      log.debug("consumed update mutation: " + updateMutation)
+      try {
+        assert(updateMutation.getDatabase.toString == Queries.DATABASE.name)
+        assert(updateMutation.getTable.toString == Queries.TABLE.name)
+        assert(updateMutation.getOldStrings.get(username).toString == Queries.INSERT.username)
+        assert(updateMutation.getNewStrings.get(username).toString == Queries.UPDATE.username)
+      } catch {
+        case e: Exception ⇒ log.error("Failed testing update: {} -> {}", e.getMessage, e.getStackTrace.mkString(System.lineSeparator()))
+      }
 
-        true
-      },
+      true
+    },
 
       deleteCallback = { deleteMutation ⇒
-        log.debug("consumed delete mutation: " + deleteMutation)
-        try {
-          assert(deleteMutation.getDatabase.toString == Queries.DATABASE.name)
-          assert(deleteMutation.getTable.toString == Queries.TABLE.name)
-          assert(deleteMutation.getStrings.get(username).toString == Queries.UPDATE.username)
-        } catch {
-          case e: Exception ⇒ log.error("Failed testing delete: {} -> {}", e.getMessage, e.getStackTrace.mkString(System.lineSeparator()))
-        }
+      log.debug("consumed delete mutation: " + deleteMutation)
+      try {
+        assert(deleteMutation.getDatabase.toString == Queries.DATABASE.name)
+        assert(deleteMutation.getTable.toString == Queries.TABLE.name)
+        assert(deleteMutation.getStrings.get(username).toString == Queries.UPDATE.username)
+      } catch {
+        case e: Exception ⇒ log.error("Failed testing delete: {} -> {}", e.getMessage, e.getStackTrace.mkString(System.lineSeparator()))
+      }
 
-        done = true
-        true
+      done = true
+      true
 
-      }) {
+    }
+    ) {
 
       protected val schemaRepoClient: GenericSchemaRepository[Short, Schema] = GenericInMemorySchemaRepo
       override def bytesToSchemaId(bytes: Array[Byte], offset: Int): Short = byteArray2Short(bytes, offset)

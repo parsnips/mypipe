@@ -44,7 +44,7 @@ class Pipe(id: String, consumers: List[MySQLBinaryLogConsumer], producer: Produc
       })
     }
 
-    override def onDisconnect(consumer: BinaryLogConsumer[MEvent, BinaryLogFilePosition]) {
+    override def onsbDisconnect(consumer: BinaryLogConsumer[MEvent, BinaryLogFilePosition]) {
       log.info(s"Pipe $id disconnected!")
       _connected = false
       flusher.foreach(_.cancel())

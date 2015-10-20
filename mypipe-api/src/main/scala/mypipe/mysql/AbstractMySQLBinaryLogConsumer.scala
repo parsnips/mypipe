@@ -15,9 +15,10 @@ import scala.collection.immutable.ListMap
 
 abstract class AbstractMySQLBinaryLogConsumer(
   protected val hostname: String,
-  protected val port: Int,
+  protected val port:     Int,
   protected val username: String,
-  protected val password: String)
+  protected val password: String
+)
     extends AbstractBinaryLogConsumer[MEvent, BinaryLogFilePosition] {
 
   protected val client = new BinaryLogClient(hostname, port, username, password)
@@ -77,7 +78,8 @@ abstract class AbstractMySQLBinaryLogConsumer(
       tableMapEventData.getTableId,
       tableMapEventData.getTable,
       tableMapEventData.getDatabase,
-      tableMapEventData.getColumnTypes))
+      tableMapEventData.getColumnTypes
+    ))
   }
 
   protected def decodeQueryEvent(event: MEvent): Option[QueryEvent] = {
@@ -173,7 +175,7 @@ abstract class AbstractMySQLBinaryLogConsumer(
 
       // zip the names and values from the table's columns and the row's data and
       // create a map that contains column names to Column objects with values
-      val cols = table.columns.zip(evRow).map(c ⇒ c._1.name -> Column(c._1, c._2))
+      val cols = table.columns.zip(evRow).map(c ⇒ c._1.name → Column(c._1, c._2))
       val columns = ListMap.empty[String, Column] ++ cols.toArray
 
       Row(table, columns)
@@ -186,8 +188,8 @@ abstract class AbstractMySQLBinaryLogConsumer(
 
       // zip the names and values from the table's columns and the row's data and
       // create a map that contains column names to Column objects with values
-      val old = ListMap.empty[String, Column] ++ table.columns.zip(evRow.getKey).map(c ⇒ c._1.name -> Column(c._1, c._2))
-      val cur = ListMap.empty[String, Column] ++ table.columns.zip(evRow.getValue).map(c ⇒ c._1.name -> Column(c._1, c._2))
+      val old = ListMap.empty[String, Column] ++ table.columns.zip(evRow.getKey).map(c ⇒ c._1.name → Column(c._1, c._2))
+      val cur = ListMap.empty[String, Column] ++ table.columns.zip(evRow.getValue).map(c ⇒ c._1.name → Column(c._1, c._2))
 
       (Row(table, old), Row(table, cur))
 

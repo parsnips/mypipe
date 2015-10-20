@@ -53,10 +53,12 @@ object PipeRunnerUtil {
     }).toMap
   }
 
-  def createPipes(conf: Config,
-                  key: String,
-                  producerClasses: Map[String, Class[Producer]],
-                  consumerConfigs: Map[String, HostPortUserPass]): Seq[Pipe] = {
+  def createPipes(
+    conf:            Config,
+    key:             String,
+    producerClasses: Map[String, Class[Producer]],
+    consumerConfigs: Map[String, HostPortUserPass]
+  ): Seq[Pipe] = {
 
     val PIPES = conf.getObject("mypipe.pipes").asScala
 

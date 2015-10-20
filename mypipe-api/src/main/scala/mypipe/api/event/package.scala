@@ -48,8 +48,9 @@ package object event {
    */
   abstract class SingleValuedMutation(
     override val table: Table,
-    val rows: List[Row],
-    override val txid: UUID = null)
+    val rows:           List[Row],
+    override val txid:  UUID      = null
+  )
       extends Mutation(table, txid)
 
   /** Represents an inserted row.
@@ -59,8 +60,9 @@ package object event {
    */
   case class InsertMutation(
     override val table: Table,
-    override val rows: List[Row],
-    override val txid: UUID = null)
+    override val rows:  List[Row],
+    override val txid:  UUID      = null
+  )
       extends SingleValuedMutation(table, rows, txid) {
 
     override def txAware(txid: UUID = null): Mutation = {
@@ -74,8 +76,9 @@ package object event {
    */
   case class UpdateMutation(
     override val table: Table,
-    rows: List[(Row, Row)],
-    override val txid: UUID = null)
+    rows:               List[(Row, Row)],
+    override val txid:  UUID             = null
+  )
       extends Mutation(table, txid) {
 
     override def txAware(txid: UUID = null): Mutation = {
@@ -90,8 +93,9 @@ package object event {
    */
   case class DeleteMutation(
     override val table: Table,
-    override val rows: List[Row],
-    override val txid: UUID = null)
+    override val rows:  List[Row],
+    override val txid:  UUID      = null
+  )
       extends SingleValuedMutation(table, rows, txid) {
 
     override def txAware(txid: UUID = null): Mutation = {

@@ -23,7 +23,8 @@ class AvroSchemaSpec extends UnitSpec with BeforeAndAfterAll {
       Some(new Parser().parse(getClass.getResourceAsStream(schema)))
     } catch {
       case e: Exception ⇒ None
-    })
+    }
+  )
 
   val client1 = createSchemaRepoClient(url)
   val client2 = createSchemaRepoClient(url)

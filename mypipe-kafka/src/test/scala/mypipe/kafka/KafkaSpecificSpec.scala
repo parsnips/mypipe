@@ -3,7 +3,7 @@ package mypipe.kafka
 import mypipe._
 
 import mypipe.api.event.Mutation
-import mypipe.avro.{ AvroVersionedRecordDeserializer, InMemorySchemaRepo }
+import mypipe.avro.{ TopicUtil, AvroVersionedRecordDeserializer, InMemorySchemaRepo }
 import mypipe.avro.schema.{ AvroSchemaUtils, ShortSchemaId, AvroSchema, GenericSchemaRepository }
 import mypipe.mysql.MySQLBinaryLogConsumer
 import mypipe.pipe.Pipe
@@ -24,7 +24,8 @@ class KafkaSpecificSpec extends UnitSpec with DatabaseSpec with ActorSystemSpec 
   @volatile var done = false
 
   val kafkaProducer = new KafkaMutationSpecificAvroProducer(
-    conf.getConfig("mypipe.test.kafka-specific-producer"))
+    conf.getConfig("mypipe.test.kafka-specific-producer")
+  )
 
   val binlogConsumer = MySQLBinaryLogConsumer(Queries.DATABASE.host, Queries.DATABASE.port, Queries.DATABASE.username, Queries.DATABASE.password)
   val pipe = new Pipe("test-pipe-kafka-specific", List(binlogConsumer), kafkaProducer)
@@ -50,59 +51,61 @@ class KafkaSpecificSpec extends UnitSpec with DatabaseSpec with ActorSystemSpec 
     val zkConnect = conf.getString("mypipe.test.kafka-specific-producer.zk-connect")
 
     val kafkaConsumer = new KafkaMutationAvroConsumer[mypipe.kafka.UserInsert, mypipe.kafka.UserUpdate, mypipe.kafka.UserDelete, Short](
-      topic = KafkaUtil.specificTopic(DATABASE, TABLE),
+      topic = TopicUtil.specificTopic(DATABASE, TABLE),
       zkConnect = zkConnect,
       groupId = s"${DATABASE}_${TABLE}_specific_test-${System.currentTimeMillis()}",
-      schemaIdSizeInBytes = 2)(
+      schemaIdSizeInBytes = 2
+    )(
 
       insertCallback = { insertMutation ⇒
-        log.debug("consumed insert mutation: " + insertMutation)
-        try {
-          assert(insertMutation.getDatabase.toString == DATABASE)
-          assert(insertMutation.getTable.toString == TABLE)
-          assert(insertMutation.getUsername.toString == USERNAME)
-          assert(insertMutation.getLoginCount == LOGIN_COUNT)
-        } catch {
-          case e: Exception ⇒ log.error("Failed testing insert: {} -> {}", e.getMessage, e.getStackTrace.mkString(System.lineSeparator()))
-        }
+      log.debug("consumed insert mutation: " + insertMutation)
+      try {
+        assert(insertMutation.getDatabase.toString == DATABASE)
+        assert(insertMutation.getTable.toString == TABLE)
+        assert(insertMutation.getUsername.toString == USERNAME)
+        assert(insertMutation.getLoginCount == LOGIN_COUNT)
+      } catch {
+        case e: Exception ⇒ log.error("Failed testing insert: {} -> {}", e.getMessage, e.getStackTrace.mkString(System.lineSeparator()))
+      }
 
-        true
-      },
+      true
+    },
 
       updateCallback = { updateMutation ⇒
-        log.debug("consumed update mutation: " + updateMutation)
-        try {
-          assert(updateMutation.getDatabase.toString == DATABASE)
-          assert(updateMutation.getTable.toString == TABLE)
-          assert(updateMutation.getOldUsername.toString == USERNAME)
-          assert(updateMutation.getNewUsername.toString == USERNAME2)
-          assert(updateMutation.getOldLoginCount == LOGIN_COUNT)
-          assert(updateMutation.getNewLoginCount == LOGIN_COUNT + 1)
-        } catch {
-          case e: Exception ⇒ log.error("Failed testing update: {} -> {}", e.getMessage, e.getStackTrace.mkString(System.lineSeparator()))
-        }
+      log.debug("consumed update mutation: " + updateMutation)
+      try {
+        assert(updateMutation.getDatabase.toString == DATABASE)
+        assert(updateMutation.getTable.toString == TABLE)
+        assert(updateMutation.getOldUsername.toString == USERNAME)
+        assert(updateMutation.getNewUsername.toString == USERNAME2)
+        assert(updateMutation.getOldLoginCount == LOGIN_COUNT)
+        assert(updateMutation.getNewLoginCount == LOGIN_COUNT + 1)
+      } catch {
+        case e: Exception ⇒ log.error("Failed testing update: {} -> {}", e.getMessage, e.getStackTrace.mkString(System.lineSeparator()))
+      }
 
-        true
-      },
+      true
+    },
 
       deleteCallback = { deleteMutation ⇒
-        log.debug("consumed delete mutation: " + deleteMutation)
-        try {
-          assert(deleteMutation.getDatabase.toString == DATABASE)
-          assert(deleteMutation.getTable.toString == TABLE)
-          assert(deleteMutation.getUsername.toString == USERNAME2)
-          assert(deleteMutation.getLoginCount == LOGIN_COUNT + 1)
-        } catch {
-          case e: Exception ⇒ log.error("Failed testing delete: {} -> {}", e.getMessage, e.getStackTrace.mkString(System.lineSeparator()))
-        }
+      log.debug("consumed delete mutation: " + deleteMutation)
+      try {
+        assert(deleteMutation.getDatabase.toString == DATABASE)
+        assert(deleteMutation.getTable.toString == TABLE)
+        assert(deleteMutation.getUsername.toString == USERNAME2)
+        assert(deleteMutation.getLoginCount == LOGIN_COUNT + 1)
+      } catch {
+        case e: Exception ⇒ log.error("Failed testing delete: {} -> {}", e.getMessage, e.getStackTrace.mkString(System.lineSeparator()))
+      }
 
-        done = true
-        true
-      },
+      done = true
+      true
+    },
 
       implicitly[TypeTag[UserInsert]],
       implicitly[TypeTag[UserUpdate]],
-      implicitly[TypeTag[UserDelete]]) {
+      implicitly[TypeTag[UserDelete]]
+    ) {
 
       protected val schemaRepoClient: GenericSchemaRepository[Short, Schema] = TestSchemaRepo
 

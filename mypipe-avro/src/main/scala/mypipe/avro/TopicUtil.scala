@@ -1,14 +1,14 @@
-package mypipe.kafka
+package mypipe.avro
 
 import com.typesafe.config.ConfigFactory
 import mypipe.api.event.Mutation
 import mypipe.util.Eval
 
-object KafkaUtil {
+object TopicUtil {
 
   val config = ConfigFactory.load()
-  val genericTopicFormat = config.getString("mypipe.kafka.generic-producer.topic-format")
-  val specificTopicFormat = config.getString("mypipe.kafka.specific-producer.topic-format")
+  val genericTopicFormat = config.getString("mypipe.generic-producer.topic-format")
+  val specificTopicFormat = config.getString("mypipe.specific-producer.topic-format")
 
   val generictplFn = Eval[(String, String) ⇒ String]("{ (db: String, table: String) => { s\"" + genericTopicFormat + "\" } }")
   val specifictplFn = Eval[(String, String) ⇒ String]("{ (db: String, table: String) => { s\"" + specificTopicFormat + "\" } }")

@@ -4,7 +4,7 @@ import mypipe.Queries
 import mypipe._
 
 import mypipe.api.event.Mutation
-import mypipe.avro.AvroVersionedRecordDeserializer
+import mypipe.avro.{ TopicUtil, AvroVersionedRecordDeserializer }
 import mypipe.avro.schema.AvroSchemaUtils
 import mypipe.mysql.MySQLBinaryLogConsumer
 import mypipe.pipe.Pipe
@@ -22,7 +22,8 @@ class KafkaAlterSpec extends UnitSpec with DatabaseSpec with ActorSystemSpec wit
   @volatile var done = false
 
   val kafkaProducer = new KafkaMutationSpecificAvroProducer(
-    conf.getConfig("mypipe.test.kafka-specific-producer"))
+    conf.getConfig("mypipe.test.kafka-specific-producer")
+  )
 
   val binlogConsumer = MySQLBinaryLogConsumer(Queries.DATABASE.host, Queries.DATABASE.port, Queries.DATABASE.username, Queries.DATABASE.password)
   val pipe = new Pipe("test-pipe-kafka-alter", List(binlogConsumer), kafkaProducer)
@@ -50,7 +51,7 @@ class KafkaAlterSpec extends UnitSpec with DatabaseSpec with ActorSystemSpec wit
     val schemaIdSizeInBytes = 2
     val headerLength = PROTO_HEADER_LEN_V0 + schemaIdSizeInBytes
     val zkConnect = conf.getString("mypipe.test.kafka-specific-producer.zk-connect")
-    val topic = KafkaUtil.specificTopic(DATABASE, TABLE)
+    val topic = TopicUtil.specificTopic(DATABASE, TABLE)
     val groupId = s"${DATABASE}_${TABLE}_specific_test-${System.currentTimeMillis()}"
     val iter = new KafkaIterator(topic, zkConnect, groupId)
 
@@ -64,7 +65,8 @@ class KafkaAlterSpec extends UnitSpec with DatabaseSpec with ActorSystemSpec wit
     // add new schema to repo
     val newSchemaId = TestSchemaRepo.registerSchema(
       AvroSchemaUtils.specificSubject(DATABASE, TABLE, Mutation.InsertString),
-      new UserInsert2().getSchema)
+      new UserInsert2().getSchema
+    )
     // alter user
     Await.result(db.connection.sendQuery(Queries.ALTER.statementAdd), 2.seconds)
     // insert into user with new field

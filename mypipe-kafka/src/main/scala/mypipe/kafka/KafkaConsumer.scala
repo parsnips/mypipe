@@ -68,7 +68,7 @@ abstract class KafkaConsumer(topic: String, zkConnect: String, groupId: String) 
 
 class KafkaIterator(topic: String, zkConnect: String, groupId: String) {
   protected val consumerConnector = createConsumerConnector(zkConnect, groupId)
-  protected val mapStreams = consumerConnector.createMessageStreams(Map(topic -> 1))
+  protected val mapStreams = consumerConnector.createMessageStreams(Map(topic → 1))
   protected val stream = mapStreams.get(topic).get.head
   protected val consumerIterator = stream.iterator()
 

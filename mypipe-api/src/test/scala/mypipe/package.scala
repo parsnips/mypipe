@@ -41,7 +41,8 @@ package object mypipe {
       Queries.DATABASE.port,
       Queries.DATABASE.username,
       Queries.DATABASE.password,
-      Queries.DATABASE.name)
+      Queries.DATABASE.name
+    )
 
     override def beforeAll(): Unit = {
       db.connect()

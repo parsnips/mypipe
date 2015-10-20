@@ -97,7 +97,8 @@ class MySQLMetadataManager(hostname: String, port: Int, username: String, passwo
   protected def getTableColumns(db: String, table: String, dbConn: Connection): Future[List[(String, String, Boolean)]] = {
     val futureCols: Future[QueryResult] = dbConn.sendQuery(
       // TODO: move this into the config file
-      s"""select COLUMN_NAME, DATA_TYPE, COLUMN_KEY from COLUMNS where TABLE_SCHEMA="$db" and TABLE_NAME = "$table" order by ORDINAL_POSITION""")
+      s"""select COLUMN_NAME, DATA_TYPE, COLUMN_KEY from COLUMNS where TABLE_SCHEMA="$db" and TABLE_NAME = "$table" order by ORDINAL_POSITION"""
+    )
 
     val mapCols: Future[List[(String, String, Boolean)]] = futureCols.map(queryResult ⇒ queryResult.rows match {
       case Some(resultSet) ⇒ {
@@ -116,7 +117,8 @@ class MySQLMetadataManager(hostname: String, port: Int, username: String, passwo
   protected def getPrimaryKey(db: String, table: String, dbConn: Connection): Future[Option[List[String]]] = {
     val futurePkey: Future[QueryResult] = dbConn.sendQuery(
       // TODO: move this into the config file
-      s"""select COLUMN_NAME from KEY_COLUMN_USAGE where TABLE_SCHEMA='${db}' and TABLE_NAME='${table}' and CONSTRAINT_NAME='PRIMARY' order by ORDINAL_POSITION""")
+      s"""select COLUMN_NAME from KEY_COLUMN_USAGE where TABLE_SCHEMA='${db}' and TABLE_NAME='${table}' and CONSTRAINT_NAME='PRIMARY' order by ORDINAL_POSITION"""
+    )
 
     val pKey: Future[Option[List[String]]] = futurePkey.map(queryResult ⇒ queryResult.rows match {
 

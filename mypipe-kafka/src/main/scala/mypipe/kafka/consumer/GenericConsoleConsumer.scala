@@ -19,22 +19,24 @@ class GenericConsoleConsumer(topic: String, zkConnect: String, groupId: String) 
     topic = topic,
     zkConnect = zkConnect,
     groupId = groupId,
-    schemaIdSizeInBytes = 2)(
+    schemaIdSizeInBytes = 2
+  )(
 
     insertCallback = { insertMutation ⇒
-      println(insertMutation)
-      true
-    },
+    println(insertMutation)
+    true
+  },
 
     updateCallback = { updateMutation ⇒
-      println(updateMutation)
-      true
-    },
+    println(updateMutation)
+    true
+  },
 
     deleteCallback = { deleteMutation ⇒
-      println(deleteMutation)
-      true
-    }) {
+    println(deleteMutation)
+    true
+  }
+  ) {
 
     protected val schemaRepoClient: GenericSchemaRepository[Short, Schema] = GenericInMemorySchemaRepo
     override def bytesToSchemaId(bytes: Array[Byte], offset: Int): Short = byteArray2Short(bytes, offset)
